@@ -55,7 +55,7 @@
 #define PIN_BT1 33
 #define PIN_BT2 34
 #define PIN_BT3 35
-#define PIN_BT4 36
+#define PIN_BT4 69
 ///////////////////MPU
 #define PIN_IMU_SCK 37
 #define PIN_IMU_SDA 38
@@ -65,16 +65,16 @@
 #define PIN_LED3 40
 #define PIN_LED4 41
 ////////////////////BUZZ
-#define PIN_BUZZER 70
+#define PIN_BUZZER 68
 ///////////////////MOTOR
-#define PIN_M1_IN1 68
-#define PIN_M1_IN2 69
-#define PIN_M2_IN2 66
-#define PIN_M2_IN1 67
-#define PIN_M3_IN1 64
-#define PIN_M3_IN2 65
-#define PIN_M4_IN1 62
-#define PIN_M4_IN2 63
+#define PIN_M1_IN1 66
+#define PIN_M1_IN2 67
+#define PIN_M2_IN2 64
+#define PIN_M2_IN1 65
+#define PIN_M3_IN1 62
+#define PIN_M3_IN2 63
+#define PIN_M4_IN1 59
+#define PIN_M4_IN2 61
 ////////////////////IO
 #define PIN_PORT1_R 42
 #define PIN_PORT1_L 43
@@ -83,22 +83,20 @@
 #define PIN_PORT3_R 46
 #define PIN_PORT3_L 47
 ////////////////////SERVO
-#define PIN_SERVO_1 48
-#define PIN_SERVO_2 49
-#define PIN_SERVO_3 50
-#define PIN_SERVO_4 51
-#define PIN_SERVO_5 52
-#define PIN_SERVO_6 53
-#define PIN_SERVO_7 54
-#define PIN_SERVO_8 55
-////////////////////AX18
-#define PIN_MCU_RX_AX18A 56
-#define PIN_MCU_TX_AX18A 57
-#define PIN_AX18A_TX_EN 58
-////////////////////RX24
-#define PIN_MCU_RX_RX24F 59
-#define PIN_MCU_TX_RX24F 60
-#define PIN_RX24F_TX_EN 61
+#define PIN_SERVO_1 49
+#define PIN_SERVO_2 50
+#define PIN_SERVO_3 51
+#define PIN_SERVO_4 52
+
+#define PIN_SERVO_5 5
+#define PIN_SERVO_6 3
+#define PIN_SERVO_7 10
+#define PIN_SERVO_8 6
+////////////////////Dynamixel
+#define PIN_MCU_RX_Dynamixel 54
+#define PIN_MCU_TX_Dynamixel 55
+#define PIN_Dynamixel_TX_EN 53
+
 ///////////////////////////////////////
 
 

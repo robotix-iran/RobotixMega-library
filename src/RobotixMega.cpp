@@ -179,13 +179,18 @@ void RobotixMega::setMotorSpeed(motor_port motor, int32_t speed)
 {
   if (speed > 0)
   {
-    analogWrite(motor.IN_1, speed);
-    digitalWrite(motor.IN_2, 0);
+    
+    pinMode(motor.IN_1, OUTPUT);
+    digitalWrite(motor.IN_1, 0);
+    analogWrite(motor.IN_2, speed);
+    
   }
   else if (speed < 0)
   {
-    analogWrite(motor.IN_1, 255 - (speed * -1));
-    digitalWrite(motor.IN_2, 1);
+    
+    pinMode(motor.IN_2, OUTPUT);
+    digitalWrite(motor.IN_2, 0);
+    analogWrite(motor.IN_1,abs(speed) );
   }
   else
   {
