@@ -16,6 +16,7 @@
 #include <U8g2lib.h>
 #include "ICM42688.h"
 #include <Servo.h>
+#include "FspTimer.h"
 
 class RobotixMega
 {
@@ -44,6 +45,11 @@ private:
   {
     uint8_t IN_1;
     uint8_t IN_2;
+
+    bool operator==(const motor_port &other) const
+    {
+      return (IN_1 == other.IN_1) && (IN_2 == other.IN_2);
+    }
   };
   /*   rj_port port_2(MOD_NONE,IO_P2_R,IO_P2_L);
     rj_port port_3(MOD_NONE,IO_P3_R,IO_P3_L);

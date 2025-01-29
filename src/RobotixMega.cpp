@@ -10,6 +10,12 @@ RobotixMega::RobotixMega() : imu(Wire1, IMU_ADDRESS)
   u8g2 = U8G2_STE2007_96X68_F_3W_SW_SPI(U8G2_R0, /* clock=*/PIN_LCD_SCK, /* data=*/PIN_LCD_MOSI, /* cs=*/PIN_LCD_CS, /* reset=*/PIN_LCD_RESET);
 }
 
+FspTimer timer0;
+FspTimer timer4;
+FspTimer timer5;
+
+static int _writeResolution = 8;
+
 int RobotixMega::begin()
 {
   pinMode(PIN_LED1, OUTPUT);
@@ -17,14 +23,27 @@ int RobotixMega::begin()
   pinMode(PIN_LED3, OUTPUT);
   pinMode(PIN_LED4, OUTPUT);
 
-  pinMode(motor_1.IN_1, OUTPUT);
-  pinMode(motor_1.IN_2, OUTPUT);
-  pinMode(motor_2.IN_1, OUTPUT);
-  pinMode(motor_2.IN_2, OUTPUT);
-  pinMode(motor_3.IN_1, OUTPUT);
-  pinMode(motor_3.IN_2, OUTPUT);
-  pinMode(motor_4.IN_1, OUTPUT);
-  pinMode(motor_4.IN_2, OUTPUT);
+  timer0.begin_pwm(GPT_TIMER, 0, CHANNEL_B);
+  timer4.begin_pwm(GPT_TIMER, 4, CHANNEL_B);
+  timer5.begin_pwm(GPT_TIMER, 5, CHANNEL_AB);
+
+  R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[PIN_M1_IN1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+  R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[PIN_M1_IN2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+
+  R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[PIN_M2_IN1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+  R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[PIN_M2_IN2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+
+  R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[PIN_M3_IN1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+  R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[PIN_M3_IN2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+
+  R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[PIN_M4_IN1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+  R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[PIN_M4_IN2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+
+  Serial.begin(115200);
+
+  Serial.println(timer0.get_period_raw());
+  Serial.println(timer4.get_period_raw());
+  Serial.println(timer5.get_period_raw());
 
   pinMode(PIN_BT1, INPUT);
   pinMode(PIN_BT2, INPUT);
@@ -38,10 +57,6 @@ int RobotixMega::begin()
   servo_2.attach(PIN_SERVO_2);
   servo_3.attach(PIN_SERVO_3);
   servo_4.attach(PIN_SERVO_4);
-  servo_5.attach(PIN_SERVO_5);
-  servo_6.attach(PIN_SERVO_6);
-  servo_7.attach(PIN_SERVO_7);
-  servo_8.attach(PIN_SERVO_8);
 
   u8g2.begin();
   u8g2.setFont(u8g2_font_6x10_tf);
@@ -60,6 +75,8 @@ int RobotixMega::begin()
   // set output data rate to 25 Hz
   imu.setAccelODR(ICM42688::odr1k);
   imu.setGyroODR(ICM42688::odr1k);
+
+  showLogo(LOGO_ROBOTIX);
 
   digitalWrite(PIN_LED1, ON);
   delay(50);
@@ -177,25 +194,77 @@ void RobotixMega::buzzerNoTone()
 
 void RobotixMega::setMotorSpeed(motor_port motor, int32_t speed)
 {
-  if (speed > 0)
+  if (motor == motor_2 || motor == motor_3)
   {
-    
-    pinMode(motor.IN_1, OUTPUT);
-    digitalWrite(motor.IN_1, 0);
-    analogWrite(motor.IN_2, speed);
-    
+    if (speed > 0)
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PWM);
+
+      timer5.set_duty_cycle((24489 * speed) / 256.0f, (motor == motor_2) ? CHANNEL_A : CHANNEL_B);
+    }
+    else if (speed < 0)
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PWM);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+
+      timer5.set_duty_cycle((24489 * abs(speed)) / 256.0f, (motor == motor_2) ? CHANNEL_A : CHANNEL_B);
+    }
+    else
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      digitalWrite(motor.IN_1, 1);
+      digitalWrite(motor.IN_2, 1);
+    }
   }
-  else if (speed < 0)
+  else if (motor == motor_1)
   {
-    
-    pinMode(motor.IN_2, OUTPUT);
-    digitalWrite(motor.IN_2, 0);
-    analogWrite(motor.IN_1,abs(speed) );
+    if (speed > 0)
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PWM);
+
+      timer4.set_duty_cycle((24489 * speed) / 256.0f, CHANNEL_B);
+    }
+    else if (speed < 0)
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PWM);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+
+      timer4.set_duty_cycle((24489 * abs(speed)) / 256.0f, CHANNEL_B);
+    }
+    else
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      digitalWrite(motor.IN_1, 1);
+      digitalWrite(motor.IN_2, 1);
+    }
   }
-  else
+  else if (motor == motor_4)
   {
-    analogWrite(motor.IN_1, 255);
-    digitalWrite(motor.IN_2, 1);
+    if (speed > 0)
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PWM);
+
+      timer0.set_duty_cycle((97959 * speed) / 256.0f, CHANNEL_B);
+    }
+    else if (speed < 0)
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PWM);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+
+      timer0.set_duty_cycle((97959 * abs(speed)) / 256.0f, CHANNEL_B);
+    }
+    else
+    {
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_1].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      R_IOPORT_PinCfg(&g_ioport_ctrl, g_pin_cfg[motor.IN_2].pin, IOPORT_CFG_PORT_DIRECTION_OUTPUT);
+      digitalWrite(motor.IN_1, 1);
+      digitalWrite(motor.IN_2, 1);
+    }
   }
 }
 
@@ -211,7 +280,8 @@ void RobotixMega::brake()
 {
 }
 
-float RobotixMega::getTemp(){
+float RobotixMega::getTemp()
+{
   imu.getAGT();
   return imu.temp();
 }
@@ -282,7 +352,7 @@ void RobotixMega::drawString(uint8_t x, uint8_t y, const char *s)
 void RobotixMega::clearRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
   u8g2.setDrawColor(0);
-  u8g2.drawBox(x,y,w,h);
+  u8g2.drawBox(x, y, w, h);
   u8g2.setDrawColor(1);
   u8g2.sendBuffer();
 }

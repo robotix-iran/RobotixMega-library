@@ -11,6 +11,7 @@
 #define ON 1
 #define OFF 0
 
+#define IOPORT_CFG_PWM (IOPORT_CFG_PERIPHERAL_PIN | IOPORT_PERIPHERAL_GPT1)
 
 #define IMU_ADDRESS 0x68
 
@@ -69,8 +70,8 @@
 ///////////////////MOTOR
 #define PIN_M1_IN1 66
 #define PIN_M1_IN2 67
-#define PIN_M2_IN2 64
 #define PIN_M2_IN1 65
+#define PIN_M2_IN2 64
 #define PIN_M3_IN1 62
 #define PIN_M3_IN2 63
 #define PIN_M4_IN1 59
@@ -88,10 +89,10 @@
 #define PIN_SERVO_3 51
 #define PIN_SERVO_4 52
 
-#define PIN_SERVO_5 5
-#define PIN_SERVO_6 3
-#define PIN_SERVO_7 10
-#define PIN_SERVO_8 6
+#define PIN_SERVO_5 3
+#define PIN_SERVO_6 5
+#define PIN_SERVO_7 6
+#define PIN_SERVO_8 10
 ////////////////////Dynamixel
 #define PIN_MCU_RX_Dynamixel 54
 #define PIN_MCU_TX_Dynamixel 55
