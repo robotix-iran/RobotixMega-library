@@ -11,12 +11,15 @@
 #include "SongNotes.h"
 #include "Logo.h"
 #include <EEPROM.h>
-#include "Wire.h"
 #include <string>
 #include <U8g2lib.h>
 #include "ICM42688.h"
 #include <Servo.h>
 #include "FspTimer.h"
+#include <Adafruit_ICM20X.h>
+#include <Adafruit_ICM20948.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
 
 class RobotixMega
 {
@@ -74,7 +77,7 @@ private:
 
 public:
   U8G2 u8g2;
-  ICM42688 imu;
+  Adafruit_ICM20948 imu;
 
   rj_port port_1{MOD_NONE, PIN_PORT1_R, PIN_PORT1_L};
   rj_port port_2{MOD_NONE, PIN_PORT2_R, PIN_PORT2_L};
@@ -116,6 +119,7 @@ public:
   void getOrientation(float &roll, float &pitch, float &yaw);
   void getAccelerations(float &ax, float &ay, float &az);
   void getGyros(float &gx, float &gy, float &gz);
+  void getMagno(float &mx, float &my, float &mz);
   void getIMU(float &ax, float &ay, float &az, float &gx, float &gy, float &gz);
 
   void setServoPositions(Servo servo, uint8_t position);

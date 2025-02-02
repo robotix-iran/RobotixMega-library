@@ -5,7 +5,7 @@
 
 #include "RobotixMega.h"
 
-RobotixMega::RobotixMega() : imu(Wire1, IMU_ADDRESS)
+RobotixMega::RobotixMega()
 {
   u8g2 = U8G2_STE2007_96X68_F_3W_SW_SPI(U8G2_R0, /* clock=*/PIN_LCD_SCK, /* data=*/PIN_LCD_MOSI, /* cs=*/PIN_LCD_CS, /* reset=*/PIN_LCD_RESET);
 }
@@ -13,8 +13,6 @@ RobotixMega::RobotixMega() : imu(Wire1, IMU_ADDRESS)
 FspTimer timer0;
 FspTimer timer4;
 FspTimer timer5;
-
-static int _writeResolution = 8;
 
 int RobotixMega::begin()
 {
@@ -41,22 +39,10 @@ int RobotixMega::begin()
 
   Serial.begin(115200);
 
-  Serial.println(timer0.get_period_raw());
-  Serial.println(timer4.get_period_raw());
-  Serial.println(timer5.get_period_raw());
-
   pinMode(PIN_BT1, INPUT);
   pinMode(PIN_BT2, INPUT);
   pinMode(PIN_BT3, INPUT);
   pinMode(PIN_BT4, INPUT);
-
-  pinMode(PIN_LCD_BKL, OUTPUT);
-  digitalWrite(PIN_LCD_BKL, HIGH);
-
-  servo_1.attach(PIN_SERVO_1);
-  servo_2.attach(PIN_SERVO_2);
-  servo_3.attach(PIN_SERVO_3);
-  servo_4.attach(PIN_SERVO_4);
 
   u8g2.begin();
   u8g2.setFont(u8g2_font_6x10_tf);
@@ -65,36 +51,30 @@ int RobotixMega::begin()
   u8g2.setFontPosTop();
   u8g2.setFontDirection(0);
 
-  int status = imu.begin();
-
-  // setting the accelerometer full scale range to +/-8G
-  imu.setAccelFS(ICM42688::gpm8);
-  // setting the gyroscope full scale range to +/-500 deg/s
-  imu.setGyroFS(ICM42688::dps500);
-
-  // set output data rate to 25 Hz
-  imu.setAccelODR(ICM42688::odr1k);
-  imu.setGyroODR(ICM42688::odr1k);
+  int status = imu.begin_I2C(IMU_ADDRESS, &Wire1, 0);
 
   showLogo(LOGO_ROBOTIX);
-
+  analogWrite(PIN_LCD_BKL, 50);
   digitalWrite(PIN_LED1, ON);
   delay(50);
   digitalWrite(PIN_LED1, LOW);
   delay(20);
+  analogWrite(PIN_LCD_BKL, 100);
   digitalWrite(PIN_LED2, ON);
   delay(50);
   digitalWrite(PIN_LED2, LOW);
   delay(20);
+  analogWrite(PIN_LCD_BKL, 150);
   digitalWrite(PIN_LED3, ON);
   delay(50);
   digitalWrite(PIN_LED3, LOW);
   delay(20);
+  analogWrite(PIN_LCD_BKL, 200);
   digitalWrite(PIN_LED4, ON);
   delay(50);
   digitalWrite(PIN_LED4, LOW);
   delay(20);
-
+  analogWrite(PIN_LCD_BKL, 255);
   return 0;
 }
 
@@ -282,8 +262,12 @@ void RobotixMega::brake()
 
 float RobotixMega::getTemp()
 {
-  imu.getAGT();
-  return imu.temp();
+  sensors_event_t accel;
+  sensors_event_t gyro;
+  sensors_event_t mag;
+  sensors_event_t temp;
+  imu.getEvent(&accel, &gyro, &temp, &mag);
+  return temp.temperature;
 }
 
 void RobotixMega::getOrientation(float &roll, float &pitch, float &yaw)
@@ -292,33 +276,45 @@ void RobotixMega::getOrientation(float &roll, float &pitch, float &yaw)
 
 void RobotixMega::getAccelerations(float &ax, float &ay, float &az)
 {
-  imu.getAGT();
+  sensors_event_t accel;
+  sensors_event_t gyro;
+  sensors_event_t mag;
+  sensors_event_t temp;
+  imu.getEvent(&accel, &gyro, &temp, &mag);
 
-  ax = imu.accX();
-  ay = imu.accY();
-  az = imu.accZ();
+  ax = accel.acceleration.x;
+  ay = accel.acceleration.y;
+  az = accel.acceleration.z;
 }
 
 void RobotixMega::getGyros(float &gx, float &gy, float &gz)
 {
-  imu.getAGT();
+  sensors_event_t accel;
+  sensors_event_t gyro;
+  sensors_event_t mag;
+  sensors_event_t temp;
+  imu.getEvent(&accel, &gyro, &temp, &mag);
 
-  gx = imu.gyrX();
-  gy = imu.gyrY();
-  gz = imu.gyrZ();
+  gx = gyro.gyro.x;
+  gy = gyro.gyro.y;
+  gz = gyro.gyro.z;
+}
+
+void RobotixMega::getMagno(float &mx, float &my, float &mz)
+{
+  sensors_event_t accel;
+  sensors_event_t gyro;
+  sensors_event_t mag;
+  sensors_event_t temp;
+  imu.getEvent(&accel, &gyro, &temp, &mag);
+
+  mx = mag.magnetic.x;
+  my = mag.magnetic.y;
+  mz = mag.magnetic.z;
 }
 
 void RobotixMega::getIMU(float &ax, float &ay, float &az, float &gx, float &gy, float &gz)
 {
-  imu.getAGT();
-
-  ax = imu.accX();
-  ay = imu.accY();
-  az = imu.accZ();
-
-  gx = imu.gyrX();
-  gy = imu.gyrY();
-  gz = imu.gyrZ();
 }
 
 void RobotixMega::setServoPositions(Servo servo, uint8_t position)

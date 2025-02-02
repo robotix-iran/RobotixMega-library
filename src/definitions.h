@@ -13,7 +13,7 @@
 
 #define IOPORT_CFG_PWM (IOPORT_CFG_PERIPHERAL_PIN | IOPORT_PERIPHERAL_GPT1)
 
-#define IMU_ADDRESS 0x68
+#define IMU_ADDRESS 0x69
 
 // SONG////////////////////////////////
 #define NOKIA 0
