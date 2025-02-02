@@ -10,8 +10,6 @@
 #include <RobotixMega.h>
 #include <Dynamixel2Arduino.h>
 
-
-
 #define DXL_SERIAL Serial3
 #define DEBUG_SERIAL Serial
 #define DXL_DIR_PIN 53
@@ -49,11 +47,25 @@ void setup() {
 
   Serial.begin(115200);
 
+  mega.servo_1.attach(PIN_SERVO_1);
+  mega.servo_2.attach(PIN_SERVO_2);
+  mega.servo_3.attach(PIN_SERVO_3);
+  mega.servo_4.attach(PIN_SERVO_4);
+  mega.servo_5.attach(PIN_SERVO_5);
+  mega.servo_6.attach(PIN_SERVO_6);
+  mega.servo_7.attach(PIN_SERVO_7);
+  mega.servo_8.attach(PIN_SERVO_8);
+
   ////Motors //////////////////////////////////////////////////////////////
   mega.setMotorSpeed(mega.motor_1, 100);
   mega.setMotorSpeed(mega.motor_2, 100);
   mega.setMotorSpeed(mega.motor_3, 100);
   mega.setMotorSpeed(mega.motor_4, 100);
+  delay(500);
+  mega.setMotorSpeed(mega.motor_1, -200);
+  mega.setMotorSpeed(mega.motor_2, -200);
+  mega.setMotorSpeed(mega.motor_3, -200);
+  mega.setMotorSpeed(mega.motor_4, -200);
   /////////////////////////////////////////////////////////////////////////
 
   ////Servos //////////////////////////////////////////////////////////////
@@ -65,6 +77,16 @@ void setup() {
   mega.setServoPositions(mega.servo_6, 180);
   mega.setServoPositions(mega.servo_7, 180);
   mega.setServoPositions(mega.servo_8, 180);
+  delay(500);
+  mega.setServoPositions(mega.servo_1, 90);
+  mega.setServoPositions(mega.servo_2, 90);
+  mega.setServoPositions(mega.servo_3, 90);
+  mega.setServoPositions(mega.servo_4, 90);
+  mega.setServoPositions(mega.servo_5, 90);
+  mega.setServoPositions(mega.servo_6, 90);
+  mega.setServoPositions(mega.servo_7, 90);
+  mega.setServoPositions(mega.servo_8, 90);
+  delay(500);
   /////////////////////////////////////////////////////////////////////////
 
   ////Dynamixel ///////////////////////////////////////////////////////////
@@ -86,22 +108,5 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  ////IMU      ///////////////////////////////////////////////////////////
-  float accx, accy, accz;
-  float gyrx, gyry, gyrz;
-  mega.getIMU(accx, accy, accz, gyrx, gyry, gyrz);
-
-  currentMillis = millis();
-  if (currentMillis - startMillis >= period) {
-    Serial.print("Gx:");
-    Serial.print(gyrx);
-    Serial.print(" Gy:");
-    Serial.print(gyry);
-    Serial.print(" Gz:");
-    Serial.println(gyrz);
-    startMillis = currentMillis;
-  }
-  /////////////////////////////////////////////////////////////////////////
-  
   mega.rjLedWrite(PORT3, mega.rjIrRead(PORT2));
 }
